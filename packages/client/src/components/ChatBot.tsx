@@ -1,5 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+
 import { Button } from './ui/button';
 import axios from 'axios';
 import { FaArrowUp } from 'react-icons/fa';
@@ -12,13 +14,18 @@ type ChatResponse = {
   message: string;
 };
 
+type Message = {
+  role: 'user' | 'bot';
+  content: string;
+};
+
 const ChatBot = () => {
   const { current } = useRef(crypto.randomUUID());
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const { register, handleSubmit, reset, formState } = useForm<FormData>();
 
   const onSubmit = async ({ prompt }: FormData) => {
-    setMessages((prev) => [...prev, prompt]);
+    setMessages((prev) => [...prev, { content: prompt, role: 'user' }]);
 
     reset();
 
@@ -27,7 +34,7 @@ const ChatBot = () => {
       conversationId: current,
     });
 
-    setMessages((prev) => [...prev, data.message]);
+    setMessages((prev) => [...prev, { content: data.message, role: 'bot' }]);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -39,9 +46,18 @@ const ChatBot = () => {
 
   return (
     <div>
-      <div>
+      <div className="flex flex-col gap-3 mb-6">
         {messages.map((message, index) => (
-          <p key={index}>{message}</p>
+          <div
+            key={index}
+            className={`px-3 py-1 rounded-xl ${
+              message.role === 'user'
+                ? 'bg-blue-600 text-white self-end'
+                : 'bg-gray-100 text-black self-start'
+            }`}
+          >
+            <ReactMarkdown>{message.content}</ReactMarkdown>
+          </div>
         ))}
       </div>
       <form
