@@ -7,6 +7,8 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const maxOutputTokens = 200;
+
 // Public Interface
 type ChatResponse = {
   id: string;
@@ -19,9 +21,9 @@ export const chatService = {
   ): Promise<ChatResponse> {
     const { id, output_text: message } = await client.responses.create({
       model: 'gpt-4o-mini',
-      input: prompt,
+      input: prompt + ` in max ${maxOutputTokens} tokens`,
       temperature: 0.3,
-      max_output_tokens: 200,
+      max_output_tokens: maxOutputTokens,
       previous_response_id:
         conversationRepository.getLastResponseId(conversationId),
     });
