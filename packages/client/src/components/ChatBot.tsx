@@ -21,20 +21,20 @@ type Message = {
 
 const ChatBot = () => {
   const { current } = useRef(crypto.randomUUID());
-  const formRef = useRef<HTMLFormElement | null>(null);
+  const lastMessageRef = useRef<HTMLParagraphElement | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const { register, handleSubmit, reset, formState } = useForm<FormData>();
   const [isBotTyping, setIsBotTyping] = useState(false);
 
   useEffect(() => {
-    formRef.current?.scrollIntoView({ behavior: 'smooth' });
+    lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const onSubmit = async ({ prompt }: FormData) => {
     setMessages((prev) => [...prev, { content: prompt, role: 'user' }]);
     setIsBotTyping(true);
 
-    reset();
+    reset({ prompt: '' });
 
     const { data } = await axios.post<ChatResponse>('/api/chat', {
       prompt,
@@ -61,12 +61,13 @@ const ChatBot = () => {
   };
 
   return (
-    <div>
-      <div className="flex flex-col gap-3 mb-6">
+    <div className='flex flex-col h-full'>
+      <div className="flex flex-col flex-1 gap-3 mb-6 overflow-y-auto">
         {messages.map((message, index) => (
           <div
             key={index}
             onCopy= {onCopy}
+            ref={index === messages.length - 1 ? lastMessageRef : null}
             className={`px-3 py-1 rounded-xl ${
               message.role === 'user'
                 ? 'bg-blue-600 text-white self-end'
@@ -87,7 +88,6 @@ const ChatBot = () => {
       <form
         onSubmit={handleSubmit(onSubmit)}
         onKeyDown={onKeyDown}
-        ref={formRef}
         className="flex flex-col gap-2 items-end border-2 p-4 rounded-3xl"
       >
         <textarea
