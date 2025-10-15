@@ -25,24 +25,35 @@ const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const { register, handleSubmit, reset, formState } = useForm<FormData>();
   const [isBotTyping, setIsBotTyping] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  /*
+   * @todo: log errors using sentry
+   */
   const onSubmit = async ({ prompt }: FormData) => {
-    setMessages((prev) => [...prev, { content: prompt, role: 'user' }]);
-    setIsBotTyping(true);
+    try {
+      setMessages((prev) => [...prev, { content: prompt, role: 'user' }]);
+      setIsBotTyping(true);
 
-    reset({ prompt: '' });
+      setError('');
+      reset({ prompt: '' });
 
-    const { data } = await axios.post<ChatResponse>('/api/chat', {
-      prompt,
-      conversationId: current,
-    });
+      const { data } = await axios.post<ChatResponse>('/api/chat', {
+        prompt,
+        conversationId: current,
+      });
 
-    setMessages((prev) => [...prev, { content: data.message, role: 'bot' }]);
-    setIsBotTyping(false);
+      setMessages((prev) => [...prev, { content: data.message, role: 'bot' }]);
+    } catch (error) {
+      setError('Something went wrong. Please try again.');
+      console.error(error);
+    } finally {
+      setIsBotTyping(false);
+    }
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -61,12 +72,12 @@ const ChatBot = () => {
   };
 
   return (
-    <div className='flex flex-col h-full'>
+    <div className="flex flex-col h-full">
       <div className="flex flex-col flex-1 gap-3 mb-6 overflow-y-auto">
         {messages.map((message, index) => (
           <div
             key={index}
-            onCopy= {onCopy}
+            onCopy={onCopy}
             ref={index === messages.length - 1 ? lastMessageRef : null}
             className={`px-3 py-1 rounded-xl ${
               message.role === 'user'
@@ -84,6 +95,7 @@ const ChatBot = () => {
             <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-200"></div>
           </div>
         )}
+        {error && <div className="text-red-500">{error}</div>}
       </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
