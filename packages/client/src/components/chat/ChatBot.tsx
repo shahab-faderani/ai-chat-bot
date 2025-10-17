@@ -42,11 +42,13 @@ const ChatBot = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex flex-col flex-1 gap-3 mb-6 overflow-y-auto">
+      <div className="flex flex-col flex-1 gap-3 mb-6 pb-40 overflow-y-auto">
         <ChatMessages messages={messages} />
         {isBotTyping && <TypingIndicator />}
         {error && <div className="text-red-500">{error}</div>}
-        <ChatInput onSubmit={onSubmit} />
+        <div className="fixed bottom-0 left-0 right-0 bg-white p-4">
+          <ChatInput onSubmit={onSubmit} />
+        </div>
       </div>
     </div>
   );
