@@ -13,7 +13,9 @@ const parkInfo = fs.readFileSync(
   path.join(__dirname, '..', 'prompts', 'WonderWorld.md'),
   'utf-8'
 );
-const instructions = template.replace('{{parkInfo}}', parkInfo);
+const instructions = template
+  .replace('{{parkInfo}}', parkInfo)
+  .replace('{{shoppingLink}}', 'https://wonderworld.com/tickets');
 
 const maxOutputTokens = 200;
 

@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 export type Message = {
   role: 'user' | 'bot';
@@ -38,7 +40,22 @@ const ChatMessages = ({ messages }: Props) => {
               : 'bg-gray-100 text-black self-start'
           }`}
         >
-          <ReactMarkdown>{message.content}</ReactMarkdown>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              a: ({ ...props }) => (
+                <a
+                  {...props}
+                  className="text-blue-500 underline hover:text-blue-700"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              ),
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
         </div>
       ))}
     </div>
