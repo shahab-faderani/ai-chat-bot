@@ -1,13 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import OpenAI from 'openai';
 import { conversationRepository } from '../repositories/conversation.repository';
 import template from '../prompts/chatbot.txt';
-
-// Implementation Detail
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { llmClient } from '../llm/client';
 
 const parkInfo = fs.readFileSync(
   path.join(__dirname, '..', 'prompts', 'WonderWorld.md'),
@@ -16,8 +11,6 @@ const parkInfo = fs.readFileSync(
 const instructions = template
   .replace('{{parkInfo}}', parkInfo)
   .replace('{{shoppingLink}}', 'https://wonderworld.com/tickets');
-
-const maxOutputTokens = 200;
 
 // Public Interface
 type ChatResponse = {
@@ -29,13 +22,13 @@ export const chatService = {
     prompt: string,
     conversationId: string
   ): Promise<ChatResponse> {
-    const { id, output_text: message } = await client.responses.create({
+    const { id, text: message } = await llmClient.generateText({
       model: 'gpt-4o-mini',
       instructions,
-      input: prompt,
+      prompt,
       temperature: 0.3,
-      max_output_tokens: maxOutputTokens,
-      previous_response_id:
+      maxTokens: 200,
+      previousResponseId:
         conversationRepository.getLastResponseId(conversationId),
     });
 
